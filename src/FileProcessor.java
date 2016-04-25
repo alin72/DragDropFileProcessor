@@ -4,39 +4,48 @@ import java.util.*;
 
 import javafx.application.Application;
 import javafx.collections.*;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.*;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
-import javafx.util.Callback;
 
 public class FileProcessor extends Application {
-
-
 	// Alice's work directory:
 	// C://Users//916423//Documents//workspace//DragDropFileProcessor-master//src//Types.txt
 
 	// Alice's home directory:
 	// //Users//alin//Documents//workspace//CSE306//RyansFileProcessor//src//Types.txt
-	
+
 	// Ryan's work directory:
-	//  
+	//
 
-	//Ryan's home directory:
-	//  
-	
+	// Ryan's home directory:
+	//
+
+	// TODO: ADD A BOTTOM BAR THAT CAN EDIT TYPE AND CLEAR ALL DATA
+
+	// the parent directory of where the files are supposed to go
+	private final String FILE_ROOT_DESTINATION = "";
+	// location of Types.txt
 	private final String FILE_TYPE_LOCATION = "C://Users//916423//Documents//workspace//DragDropFileProcessor-master//src//Types.txt";
+	// list of files drag & dropped in
 	private ArrayList<File> filesImported = new ArrayList<>();
+	// list of items (file name & buttons) in the queue for part 3
 	private ArrayList<VBox> items = new ArrayList<>();
+	// section to put part 3 components
 	private VBox hb3 = new VBox();
+	// list of types read from Types.txt
 	private ArrayList<String> types = new ArrayList<>();
+	// the queue list in part 3
 	private ListView<VBox> lv = new ListView<>();
-	
-	
+	// list of the new/generated filenames - used to check for duplicate names
+	private HashMap<String, Integer> fileNames = new HashMap<>();
 
-	public ArrayList<String> readFile() throws IOException {
+	// reads the list of Types from Types.txt
+	public ArrayList<String> readTypesFromFile() throws IOException {
 		ArrayList<String> typesList = new ArrayList<>();
 		List<String> lines = Files.readAllLines(Paths.get(FILE_TYPE_LOCATION));
 		for (String line : lines) {
@@ -45,6 +54,7 @@ public class FileProcessor extends Application {
 		return typesList;
 	}
 
+	// sets up panel 1 (drag & drop)
 	public HBox initP1() {
 		Label dragDrop = new Label("Drag & Drop your \nfiles here");
 		// HBOX IS HORIZONTAL BOX. VBOX IS VERTICAL BOX.
@@ -54,9 +64,13 @@ public class FileProcessor extends Application {
 		return hb;
 	}
 
+	TextField numField = new TextField();
+
+	// sets up panel 2 (file number input)
 	public VBox initP2() {
 		Label askNum = new Label("Enter the file number: ");
-		TextField numField = new TextField();
+		// Label askNum = new Label("Enter the file number: ");
+
 		numField.setMaxWidth(100);
 		VBox hb2 = new VBox(8);
 		hb2.getChildren().addAll(askNum, numField);
@@ -64,50 +78,128 @@ public class FileProcessor extends Application {
 		return hb2;
 	}
 
-
+	// sets up panel 3 (setting file-to-type queue)
 	public void initP3() {
-		
+		generateQueue();
+		// lv = new ListView<>();
+		//lv.
 		ObservableList<VBox> ol = FXCollections.observableArrayList(items);
 		lv.setItems(ol);
-		hb3.getChildren().addAll(lv);
+		
+		hb3.getChildren().clear();
+		hb3.getChildren().add(lv);
 		hb3.setStyle("-fx-border-color: black;");
+		
+		border.setRight(null);
+		border.setRight(hb3);
 	}
-	
+
 	// creates the vbox to add as each item in the queue.
-	//the vbox will contain the filename & buttons of types
-	public void generateQueue(){
+	// the vbox will contain the filename & buttons of types
+	public void generateQueue() {
+		items = new ArrayList<>();
 		VBox item;
 		HBox buttons;
-		for(File f:filesImported){
-			 buttons = new HBox();
+		Button btn;
+		for (File f : filesImported) {
+			buttons = new HBox();
 			item = new VBox();
 			item.getChildren().add(new Label(f.getName()));
-			
-			for(int j = 0; j< types.size();j++){
-				buttons.getChildren().add(new Button(types.get(j)));
+
+			for (int j = 0; j < types.size(); j++) {
+				btn = new Button(types.get(j));
+				btn.setId(f.getName());
+				btn.setOnAction(new EventHandler<ActionEvent>() {
+					@Override
+					public void handle(ActionEvent event) {
+						buttonOnClick((Button) event.getSource());
+					}
+				});
+				buttons.getChildren().add(btn);
 			}
 			item.getChildren().add(buttons);
-			
+
 			items.add(item);
 		}
-
 	}
 
+	/*
+	 * WORK IN PROGRESS Deals with buttons being clicked on in part 3
+	 * 
+	 * It will:
+	 * 
+	 * 0. pull the file number from part 2
+	 * 
+	 * 1. take generate the new file name
+	 * 
+	 * 2. add the new name in the hash to check for duplicates
+	 * 
+	 * 2.5 if duplicate, add a _2 or w/e value the hash has
+	 * 
+	 * 3. rename & move the file
+	 * 
+	 * 4. remove from list & update the listview
+	 */
+	public void buttonOnClick(Button b) {
+		String num = numField.getText();
+		if (num == "")
+			System.out.println("Please enter file number");
+		else {
+			String fileName = num + "_" + b.getText();
+			if (fileNames.containsKey(fileName)) {
+				int x = Integer.valueOf(fileNames.get(fileName));
+				fileNames.put(fileName, new Integer(x + 1));
+				fileName += "_" + (x + 1);
+			} else {
+				fileNames.put(fileName, new Integer(1));
+			}
+			System.out.println(fileName);
+			// TODO: rename & move file
+			
+			removeFile(b.getId());
+			// hb3.getChildren().clear();
+			//initP3();
+			emptyP3();
+			// update listView
+			
+		}
+	}
+	public void emptyP3(){
+		hb3.getChildren().clear();
+		generateQueue();
+		lv = new ListView<>();
+		ObservableList<VBox> ol = FXCollections.observableArrayList(items);
+		lv.setItems(ol);
+		hb3.getChildren().add(lv);
+	}
+
+	// removes the file from the queue after the button is clicked
+	public void removeFile(String name) {
+
+		for (int i = 0; i < filesImported.size(); i++) {
+			if (filesImported.get(i).getName().equals(name)) {
+				filesImported.remove(i);
+				return;
+			}
+		}
+	}
+
+	BorderPane border = new BorderPane();
+	Scene scene;
+	// the "main method" of this project
 	@Override
 	public void start(Stage primaryStage) {
+		// will try to read the files from Types.txt
 		try {
-			types = readFile();
-			//after getting the array of types, show them on p3 as test
-			BorderPane border = new BorderPane();
+			types = readTypesFromFile();
+			// set up the GUI window
+			border = new BorderPane();
 			HBox hb1 = initP1();
 			VBox hb2 = initP2();
-			generateQueue();
+			// after getting the list of types, show them on p3 as test
 			initP3();
-			
-			border.setCenter(hb2);
-			border.setLeft(hb1);
-			border.setRight(hb3);
 
+			// handler to notice the files being dragged in panel
 			hb1.setOnDragOver(new EventHandler<DragEvent>() {
 				@Override
 				public void handle(DragEvent event) {
@@ -119,8 +211,8 @@ public class FileProcessor extends Application {
 					}
 				}
 			});
-			
-			// Dropping over surface
+
+			// handler to deal with files dropped
 			hb1.setOnDragDropped(new EventHandler<DragEvent>() {
 				@Override
 				public void handle(DragEvent event) {
@@ -128,8 +220,8 @@ public class FileProcessor extends Application {
 					boolean success = false;
 					if (db.hasFiles()) {
 						success = true;
+						filesImported = new ArrayList<>();
 						for (File file : db.getFiles()) {
-							generateQueue();
 							filesImported.add(file);
 							System.out.println(file.getName());
 						}
@@ -139,16 +231,21 @@ public class FileProcessor extends Application {
 					event.consume();
 				}
 			});
-			
+
+			// setting the panels in the border-layout object
+			border.setCenter(hb2);
+			border.setLeft(hb1);
+			border.setRight(hb3);
+
 			Scene scene = new Scene(border, 551, 400);
 			primaryStage.setScene(scene);
+			primaryStage.setTitle("File Processor");
 			primaryStage.show();
-	
+
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
 	}
 
 	public static void main(String[] args) {

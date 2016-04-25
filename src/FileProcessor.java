@@ -82,14 +82,14 @@ public class FileProcessor extends Application {
 	public void initP3() {
 		generateQueue();
 		// lv = new ListView<>();
-		//lv.
+		// lv.
 		ObservableList<VBox> ol = FXCollections.observableArrayList(items);
 		lv.setItems(ol);
-		
+
 		hb3.getChildren().clear();
 		hb3.getChildren().add(lv);
 		hb3.setStyle("-fx-border-color: black;");
-		
+
 		border.setRight(null);
 		border.setRight(hb3);
 	}
@@ -145,7 +145,7 @@ public class FileProcessor extends Application {
 		if (num == "")
 			System.out.println("Please enter file number");
 		else {
-			String fileName = num + "_" + b.getText();
+			String fileName = num + "_" + b.getText(); //TODO: ADD EXTENSION TO FILENAME
 			if (fileNames.containsKey(fileName)) {
 				int x = Integer.valueOf(fileNames.get(fileName));
 				fileNames.put(fileName, new Integer(x + 1));
@@ -155,37 +155,40 @@ public class FileProcessor extends Application {
 			}
 			System.out.println(fileName);
 			// TODO: rename & move file
-			
+			renameAndMoveFile(b.getId(), fileName);
+			// update listview
 			removeFile(b.getId());
-			// hb3.getChildren().clear();
-			//initP3();
-			emptyP3();
-			// update listView
+			initP3();
+		}
+	}
+
+	public void renameAndMoveFile(String name, String newName) {
+		int index;
+		if ((index = findIndexOfFile(name)) > -1) {
 			
 		}
 	}
-	public void emptyP3(){
-		hb3.getChildren().clear();
-		generateQueue();
-		lv = new ListView<>();
-		ObservableList<VBox> ol = FXCollections.observableArrayList(items);
-		lv.setItems(ol);
-		hb3.getChildren().add(lv);
+
+	public int findIndexOfFile(String name) {
+		for (int i = 0; i < filesImported.size(); i++) {
+			if (filesImported.get(i).getName().equals(name)) {
+				filesImported.remove(i);
+				return i;
+			}
+		}
+		return -1;
 	}
 
 	// removes the file from the queue after the button is clicked
 	public void removeFile(String name) {
-
-		for (int i = 0; i < filesImported.size(); i++) {
-			if (filesImported.get(i).getName().equals(name)) {
-				filesImported.remove(i);
-				return;
-			}
-		}
+		int index;
+		if ((index = findIndexOfFile(name)) > -1)
+			filesImported.remove(index);
 	}
 
 	BorderPane border = new BorderPane();
 	Scene scene;
+
 	// the "main method" of this project
 	@Override
 	public void start(Stage primaryStage) {

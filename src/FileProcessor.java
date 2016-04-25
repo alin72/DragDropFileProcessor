@@ -14,6 +14,7 @@ import javafx.util.Callback;
 
 public class FileProcessor extends Application {
 
+
 	// Alice's work directory:
 	// C://Users//916423//Documents//workspace//DragDropFileProcessor-master//src//Types.txt
 
@@ -34,11 +35,11 @@ public class FileProcessor extends Application {
 	private ListView<VBox> lv = new ListView<>();
 	
 	
+
 	public ArrayList<String> readFile() throws IOException {
 		ArrayList<String> typesList = new ArrayList<>();
 		List<String> lines = Files.readAllLines(Paths.get(FILE_TYPE_LOCATION));
 		for (String line : lines) {
-			System.out.println(line);
 			typesList.add(line);
 		}
 		return typesList;
@@ -62,6 +63,7 @@ public class FileProcessor extends Application {
 		hb2.setStyle("-fx-border-color: black;");
 		return hb2;
 	}
+
 
 	public void initP3() {
 		
@@ -88,6 +90,7 @@ public class FileProcessor extends Application {
 			
 			items.add(item);
 		}
+
 	}
 
 	@Override
@@ -140,11 +143,12 @@ public class FileProcessor extends Application {
 			Scene scene = new Scene(border, 551, 400);
 			primaryStage.setScene(scene);
 			primaryStage.show();
-			
+	
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+
 	}
 
 	public static void main(String[] args) {

@@ -28,7 +28,7 @@ public class FileProcessor extends Application {
 	// TODO: ADD A BOTTOM BAR THAT CAN EDIT TYPE AND CLEAR ALL DATA
 
 	// the parent directory of where the files are supposed to go
-	private final String FILE_ROOT_DESTINATION = "";
+	private final String FILE_ROOT_DESTINATION = "C://Users//916423//Downloads//";
 	// location of Types.txt
 	private final String FILE_TYPE_LOCATION = "C://Users//916423//Documents//workspace//DragDropFileProcessor-master//src//Types.txt";
 	// list of files drag & dropped in
@@ -141,11 +141,16 @@ public class FileProcessor extends Application {
 	 * 4. remove from list & update the listview
 	 */
 	public void buttonOnClick(Button b) {
-		String num = numField.getText();
-		if (num == "")
+		String num = numField.getText(), labelName = b.getId(),
+				origFullPath = filesImported.get(findIndexOfFile(labelName)).getAbsolutePath();
+
+		if (num == "")// TODO: or is not a number
 			System.out.println("Please enter file number");
 		else {
-			String fileName = num + "_" + b.getText(); //TODO: ADD EXTENSION TO FILENAME
+			String fileName = num + "_" + b.getText()
+					+ origFullPath.substring(origFullPath.indexOf("."), origFullPath.length()); // TODO:
+			// TO
+			// FILENAME
 			if (fileNames.containsKey(fileName)) {
 				int x = Integer.valueOf(fileNames.get(fileName));
 				fileNames.put(fileName, new Integer(x + 1));
@@ -155,24 +160,39 @@ public class FileProcessor extends Application {
 			}
 			System.out.println(fileName);
 			// TODO: rename & move file
-			renameAndMoveFile(b.getId(), fileName);
+			renameAndMoveFile(labelName, fileName, Integer.valueOf(num));
 			// update listview
-			removeFile(b.getId());
+			removeFile(labelName);
 			initP3();
 		}
 	}
 
-	public void renameAndMoveFile(String name, String newName) {
+	public void renameAndMoveFile(String name, String newName, int fileNum) {
 		int index;
+
 		if ((index = findIndexOfFile(name)) > -1) {
-			
+			File target = new File(FILE_ROOT_DESTINATION + "//" + fileNum);
+			File f = filesImported.get(index);
+			Path src = Paths.get(f.getAbsolutePath()), //
+					dest = Paths.get(FILE_ROOT_DESTINATION + "//" + fileNum + "//" + newName);
+			if (target.exists()) {
+				target.mkdir();
+			}
+			System.out.println(dest);
+			try {
+				Files.move(src, dest, StandardCopyOption.REPLACE_EXISTING);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
 		}
 	}
 
 	public int findIndexOfFile(String name) {
 		for (int i = 0; i < filesImported.size(); i++) {
 			if (filesImported.get(i).getName().equals(name)) {
-				filesImported.remove(i);
+				// filesImported.remove(i);
 				return i;
 			}
 		}
@@ -225,8 +245,12 @@ public class FileProcessor extends Application {
 						success = true;
 						filesImported = new ArrayList<>();
 						for (File file : db.getFiles()) {
-							filesImported.add(file);
-							System.out.println(file.getName());
+							if (filesImported.indexOf(file) < 0) {
+								filesImported.add(file);
+								System.out.println(file.getName());
+							} else {
+								System.out.println("You already dropped the file: " + file.getName());
+							}
 						}
 					}
 					event.setDropCompleted(success);

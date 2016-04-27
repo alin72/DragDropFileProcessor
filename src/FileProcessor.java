@@ -8,6 +8,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.input.*;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
@@ -143,12 +144,17 @@ public class FileProcessor extends Application {
 	public void buttonOnClick(Button b) {
 		String num = numField.getText(), labelName = b.getId(),
 				origFullPath = filesImported.get(findIndexOfFile(labelName)).getAbsolutePath();
+		System.out.println(origFullPath);
 
-		if (num == "")// TODO: or is not a number
+		if (num.equals("") || num.matches("[0-9]+")) {// TODO: or is not a number
+			Alert a = new Alert(AlertType.ERROR);
+			a.setTitle("Invalid Input");
+			a.setContentText("Input for file number is invalid");
+			a.showAndWait();
 			System.out.println("Please enter file number");
-		else {
-			String fileName = num + "_" + b.getText()
-					+ origFullPath.substring(origFullPath.indexOf("."), origFullPath.length()); // TODO:
+		} else {
+			String fileName = num + "_" + b.getText() + ((origFullPath.indexOf(".") >= 0)
+					? origFullPath.substring(origFullPath.indexOf("."), origFullPath.length()) : "");
 			// TO
 			// FILENAME
 			if (fileNames.containsKey(fileName)) {
@@ -171,12 +177,14 @@ public class FileProcessor extends Application {
 		int index;
 
 		if ((index = findIndexOfFile(name)) > -1) {
-			File target = new File(FILE_ROOT_DESTINATION + "//" + fileNum);
+			File target = new File(FILE_ROOT_DESTINATION + "//" + fileNum + "//" + newName);
 			File f = filesImported.get(index);
 			Path src = Paths.get(f.getAbsolutePath()), //
-					dest = Paths.get(FILE_ROOT_DESTINATION + "//" + fileNum + "//" + newName);
-			if (target.exists()) {
-				target.mkdir();
+					dest = Paths.get(target.getAbsolutePath());
+			if (!target.exists()) {
+				// Files.createDirectory(target);
+				// target.mkdir();
+				target.getParentFile().mkdirs();
 			}
 			System.out.println(dest);
 			try {

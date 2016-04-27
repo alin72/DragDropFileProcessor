@@ -11,6 +11,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.input.*;
 import javafx.scene.layout.*;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 public class FileProcessor extends Application {
@@ -80,24 +81,97 @@ public class FileProcessor extends Application {
 	}
 
 	// sets up panel 3 (setting file-to-type queue)
-	public void initP3() {
-		generateQueue();
+	public void initP3(final Stage primaryStage) {
+		generateQueue(primaryStage);
 		// lv = new ListView<>();
 		// lv.
 		ObservableList<VBox> ol = FXCollections.observableArrayList(items);
 		lv.setItems(ol);
 
 		hb3.getChildren().clear();
-		hb3.getChildren().add(lv);
+		hb3.getChildren().addAll(lv,initP3AddOn(primaryStage));
+		
 		hb3.setStyle("-fx-border-color: black;");
 
 		border.setRight(null);
 		border.setRight(hb3);
 	}
 
+	// sets up the clear and edit button for p3
+	public HBox initP3AddOn(final Stage primaryStage) {
+		HBox clearEdit = new HBox();
+		Button clear = new Button("Clear All");
+		Button edit = new Button("Edit Types");
+		BorderPane pane = new BorderPane();
+
+		clear.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent arg0) {
+				numField.setText("");
+				filesImported = new ArrayList<>();
+				initP3(primaryStage);
+			}
+		});
+///////////
+		edit.setOnAction(new EventHandler<ActionEvent>() {
+
+			public HBox generateCell(String name) {
+				HBox result = new HBox();
+				Button del, rename;
+
+				del = new Button();
+				rename = new Button();
+				del.setOnAction(new EventHandler<ActionEvent>() {
+					@Override
+					public void handle(ActionEvent e) {
+
+					}
+				});
+				rename.setOnAction(new EventHandler<ActionEvent>() {
+					@Override
+					public void handle(ActionEvent e) {
+
+					}
+				});
+
+				result.getChildren().addAll(del, rename);
+				return result;
+
+			}
+
+			public HBox generateBottomButtons() {
+				HBox result = new HBox();
+				Button save = new Button();
+				Button cancel = new Button();
+
+				return result;
+			}
+
+			@Override
+			public void handle(ActionEvent arg0) {
+				final Stage dialog = new Stage();
+				dialog.initModality(Modality.APPLICATION_MODAL);
+				dialog.initOwner(primaryStage);
+				// TODO: ADD THE ADD TYPE POPUP
+				ArrayList<HBox> items = new ArrayList<>();
+				for (int i = 0; i < types.size(); i++) {
+					items.add(generateCell(types.get(i)));
+				}
+				ListView<HBox> lv = new ListView<>();
+				ObservableList<HBox> ol = FXCollections.observableArrayList(items);
+				lv.setItems(ol);
+
+			}
+
+		});
+///////////
+		clearEdit.getChildren().addAll(clear, edit);
+		return clearEdit;
+	}
+
 	// creates the vbox to add as each item in the queue.
 	// the vbox will contain the filename & buttons of types
-	public void generateQueue() {
+	public void generateQueue(final Stage ps) {
 		items = new ArrayList<>();
 		VBox item;
 		HBox buttons;
@@ -113,7 +187,7 @@ public class FileProcessor extends Application {
 				btn.setOnAction(new EventHandler<ActionEvent>() {
 					@Override
 					public void handle(ActionEvent event) {
-						buttonOnClick((Button) event.getSource());
+						buttonOnClick((Button) event.getSource(), ps);
 					}
 				});
 				buttons.getChildren().add(btn);
@@ -141,12 +215,13 @@ public class FileProcessor extends Application {
 	 * 
 	 * 4. remove from list & update the listview
 	 */
-	public void buttonOnClick(Button b) {
+	public void buttonOnClick(Button b, Stage ps) {
 		String num = numField.getText(), labelName = b.getId(),
 				origFullPath = filesImported.get(findIndexOfFile(labelName)).getAbsolutePath();
 		System.out.println(origFullPath);
 
-		if (num.equals("") || num.matches("[0-9]+")) {// TODO: or is not a number
+		if (num.equals("") || num.matches("[0-9]+")) {// TODO: or is not a
+														// number
 			Alert a = new Alert(AlertType.ERROR);
 			a.setTitle("Invalid Input");
 			a.setContentText("Input for file number is invalid");
@@ -169,7 +244,7 @@ public class FileProcessor extends Application {
 			renameAndMoveFile(labelName, fileName, Integer.valueOf(num));
 			// update listview
 			removeFile(labelName);
-			initP3();
+			initP3(ps);
 		}
 	}
 
@@ -219,7 +294,7 @@ public class FileProcessor extends Application {
 
 	// the "main method" of this project
 	@Override
-	public void start(Stage primaryStage) {
+	public void start(final Stage primaryStage) {
 		// will try to read the files from Types.txt
 		try {
 			types = readTypesFromFile();
@@ -228,7 +303,7 @@ public class FileProcessor extends Application {
 			HBox hb1 = initP1();
 			VBox hb2 = initP2();
 			// after getting the list of types, show them on p3 as test
-			initP3();
+			initP3(primaryStage);
 
 			// handler to notice the files being dragged in panel
 			hb1.setOnDragOver(new EventHandler<DragEvent>() {
@@ -262,8 +337,7 @@ public class FileProcessor extends Application {
 						}
 					}
 					event.setDropCompleted(success);
-					initP3();
-					event.consume();
+					initP3(primaryStage);
 				}
 			});
 
@@ -271,6 +345,7 @@ public class FileProcessor extends Application {
 			border.setCenter(hb2);
 			border.setLeft(hb1);
 			border.setRight(hb3);
+			// border.setTop(initP3AddOn(primaryStage));
 
 			Scene scene = new Scene(border, 551, 400);
 			primaryStage.setScene(scene);

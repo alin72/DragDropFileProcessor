@@ -6,6 +6,7 @@ import javafx.application.Application;
 import javafx.collections.*;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.Alert.AlertType;
@@ -119,15 +120,22 @@ public class FileProcessor extends Application {
 			public HBox generateCell(String name) {
 				HBox result = new HBox();
 				Button del, rename;
-
-				del = new Button();
-				rename = new Button();
+				result.setSpacing(10);
+				del = new Button("Delete");
+				del.setId(name);
+				rename = new Button("Rename");
 				del.setOnAction(new EventHandler<ActionEvent>() {
 					@Override
 					public void handle(ActionEvent e) {
+						int index;
+						if ((index = findIndexOfType(((Button) e.getSource()).getId())) > -1) {
+							types.remove(index);
+							updateWindow();
 
+						}
 					}
 				});
+
 				rename.setOnAction(new EventHandler<ActionEvent>() {
 					@Override
 					public void handle(ActionEvent e) {
@@ -135,33 +143,60 @@ public class FileProcessor extends Application {
 					}
 				});
 
-				result.getChildren().addAll(del, rename);
+				result.getChildren().addAll(new Label(name), del, rename);
 				return result;
 
+			}
+
+			public int findIndexOfType(String name) {
+				for (int i = 0; i < types.size(); i++) {
+					if (name.equals(types.get(i)))
+						return i;
+				}
+				return -1;
 			}
 
 			public HBox generateBottomButtons() {
 				HBox result = new HBox();
 				Button save = new Button();
 				Button cancel = new Button();
-
+				s = new Scene(lv,300,300);
 				return result;
 			}
 
+			public void updateWindow() {
+				lv = new ListView<>();
+				ol = FXCollections.observableArrayList(items);
+				lv.setItems(ol);
+				
+			}
+
+			ListView<HBox> lv;
+			ArrayList<HBox> items;
+			ObservableList<HBox> ol;
+			Scene s;
 			@Override
 			public void handle(ActionEvent arg0) {
+				VBox dialogVbox = new VBox(20);
 				final Stage dialog = new Stage();
 				dialog.initModality(Modality.APPLICATION_MODAL);
 				dialog.initOwner(primaryStage);
+				
 				// TODO: ADD THE ADD TYPE POPUP
-				ArrayList<HBox> items = new ArrayList<>();
+				items = new ArrayList<>();
 				for (int i = 0; i < types.size(); i++) {
 					items.add(generateCell(types.get(i)));
 				}
-				ListView<HBox> lv = new ListView<>();
-				ObservableList<HBox> ol = FXCollections.observableArrayList(items);
-				lv.setItems(ol);
-
+				updateWindow();
+				// dialogVbox.getChildren().add(e);
+				/*
+				 * Scene scene = new Scene(border, 501, 430);
+				 * primaryStage.setScene(scene); primaryStage.setTitle(
+				 * "File Processor");
+				 */
+				s = new Scene(lv, 300, 300);
+				dialog.setScene(s);
+				dialog.show();
 			}
 
 		});
@@ -221,15 +256,15 @@ public class FileProcessor extends Application {
 	 * 4. remove from list & update the listview
 	 */
 	public void buttonOnClick(Button b, Stage ps) {
-		if(filesImported.size()<1){
+		if (filesImported.size() < 1) {
 			Alert a = new Alert(AlertType.ERROR);
 			a.setContentText("There are no files to process");
 		}
-		String num = numField.getText(), 
-				labelName = filesImported.get(0).getAbsolutePath();
-			//	origFullPath = filesImported.get(findIndexOfFile(labelName)).getAbsolutePath();
-		//System.out.println(origFullPath);
-		//int n = Integer.valueOf(num);
+		String num = numField.getText(), labelName = filesImported.get(0).getAbsolutePath();
+		// origFullPath =
+		// filesImported.get(findIndexOfFile(labelName)).getAbsolutePath();
+		// System.out.println(origFullPath);
+		// int n = Integer.valueOf(num);
 		if (!num.equals("") && !num.matches("^[0-9]+$")) {
 			Alert a = new Alert(AlertType.ERROR);
 			a.setTitle("Invalid Input");
@@ -239,7 +274,7 @@ public class FileProcessor extends Application {
 		} else {
 			String fileName = num + "_" + b.getText();
 			System.out.println(fileName);
-			
+
 			// TO
 			// FILENAME
 			if (fileNames.containsKey(fileName)) {
@@ -249,8 +284,8 @@ public class FileProcessor extends Application {
 			} else {
 				fileNames.put(fileName, new Integer(1));
 			}
-			fileName+= ((labelName.indexOf(".") >= 0)
-					? labelName.substring(labelName.indexOf("."), labelName.length()) : "");
+			fileName += ((labelName.indexOf(".") >= 0) ? labelName.substring(labelName.indexOf("."), labelName.length())
+					: "");
 			System.out.println(fileName);
 			// TODO: rename & move file
 			renameAndMoveFile(labelName, fileName, Integer.valueOf(num));
@@ -264,25 +299,25 @@ public class FileProcessor extends Application {
 	public void renameAndMoveFile(String name, String newName, int fileNum) {
 		int index;
 
-	//	if ((index = findIndexOfFile(name)) > -1) {
-			File target = new File(FILE_ROOT_DESTINATION + "//" + fileNum + "//" + newName);
-		//	File f = filesImported.get(index);
-			Path src = Paths.get(name), //
-					dest = Paths.get(target.getAbsolutePath());
-			if (!target.exists()) {
-				// Files.createDirectory(target);
-				// target.mkdir();
-				target.getParentFile().mkdirs();
-			}
-			System.out.println(dest);
-			try {
-				Files.move(src, dest, StandardCopyOption.REPLACE_EXISTING);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+		// if ((index = findIndexOfFile(name)) > -1) {
+		File target = new File(FILE_ROOT_DESTINATION + "//" + fileNum + "//" + newName);
+		// File f = filesImported.get(index);
+		Path src = Paths.get(name), //
+				dest = Paths.get(target.getAbsolutePath());
+		if (!target.exists()) {
+			// Files.createDirectory(target);
+			// target.mkdir();
+			target.getParentFile().mkdirs();
+		}
+		System.out.println(dest);
+		try {
+			Files.move(src, dest, StandardCopyOption.REPLACE_EXISTING);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
-		//}
+		// }
 	}
 
 	public int findIndexOfFile(String name) {

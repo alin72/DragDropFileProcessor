@@ -1,6 +1,6 @@
-type1
-type2
-type3
-type4
+Sat
+Deed
+Mortgage
+Power of Attorney
 type5
 type6

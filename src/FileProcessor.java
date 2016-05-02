@@ -227,10 +227,10 @@ public class FileProcessor extends Application {
 		}
 		String num = numField.getText(), 
 				labelName = filesImported.get(0).getAbsolutePath();
-			//	origFullPath = filesImported.get(findIndexOfFile(labelName)).getAbsolutePath();
+		//origFullPath = filesImported.get(findIndexOfFile(labelName)).getAbsolutePath();
 		//System.out.println(origFullPath);
 		//int n = Integer.valueOf(num);
-		if (!num.equals("") && !num.matches("^[0-9]+$")) {
+		if (num.equals("")) {
 			Alert a = new Alert(AlertType.ERROR);
 			a.setTitle("Invalid Input");
 			a.setContentText("Input for file number is invalid");

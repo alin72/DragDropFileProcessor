@@ -22,17 +22,17 @@ public class FileProcessor extends Application {
 	// //Users//alin//Documents//workspace//CSE306//RyansFileProcessor//src//Types.txt
 
 	// Ryan's work directory:
-	//
+	// C://Users//jhu//Desktop//branchy//Types.txt
 
 	// Ryan's home directory:
-	//
+	// C://Users//jhu//Desktop//
 
 	// TODO: ADD A BOTTOM BAR THAT CAN EDIT TYPE AND CLEAR ALL DATA
 
 	// the parent directory of where the files are supposed to go
-	private final String FILE_ROOT_DESTINATION = "C://Users//916423//Downloads//";
+	private final String FILE_ROOT_DESTINATION = "C://Users//jhu//Desktop//";
 	// location of Types.txt
-	private final String FILE_TYPE_LOCATION = "C://Users//916423//Documents//workspace//DragDropFileProcessor-master//src//Types.txt";
+	private final String FILE_TYPE_LOCATION = "C://Users//jhu//Desktop//branchy//Types.txt";
 	// list of files drag & dropped in
 	private ArrayList<File> filesImported = new ArrayList<>();
 	// list of items (file name & buttons) in the queue for part 3

@@ -56,20 +56,14 @@ public class FileProcessor extends Application {
 		return typesList;
 	}
 
-	Label dragDrop = new Label("Drag & Drop your \nfiles anywhere in \nthis window");
-
 	// sets up panel 1 (drag & drop)
-	public void initP1() {
-		hb1.getChildren().clear();
-		dragDrop.setPrefHeight(100);
-		generateFileQueue();
-		ObservableList<VBox> ol = FXCollections.observableArrayList(items);
-		lv.setItems(ol);
-		hb1.getChildren().addAll(dragDrop, lv);
-		hb1.setStyle("-fx-border-color: black;");
-
-		hb1.setPrefWidth(130);
-		border.setLeft(hb1);
+	public HBox initP1() {
+		Label dragDrop = new Label("Drag & Drop your \nfiles here");
+		// HBOX IS HORIZONTAL BOX. VBOX IS VERTICAL BOX.
+		HBox hb = new HBox(8);
+		hb.getChildren().add(dragDrop);
+		hb.setStyle("-fx-border-color: black;");
+		return hb;
 	}
 
 	TextField numField = new TextField();
@@ -88,13 +82,19 @@ public class FileProcessor extends Application {
 
 	// sets up panel 3 (setting file-to-type queue)
 	public void initP3(final Stage primaryStage) {
-		generateButtonList(primaryStage);
+		generateQueue(primaryStage);
+		// lv = new ListView<>();
+		// lv.
+		ObservableList<VBox> ol = FXCollections.observableArrayList(items);
+		lv.setItems(ol);
 
-		// hb3.getChildren().addAll(initP3AddOn(primaryStage));
+		hb3.getChildren().clear();
+		hb3.getChildren().addAll(lv,initP3AddOn(primaryStage));
+		
 		hb3.setStyle("-fx-border-color: black;");
-		// hb3.setPrefWidth(100);
-		border.setRight(hb3);
 
+		border.setRight(null);
+		border.setRight(hb3);
 	}
 
 	// sets up the clear and edit button for p3
@@ -103,17 +103,16 @@ public class FileProcessor extends Application {
 		Button clear = new Button("Clear All");
 		Button edit = new Button("Edit Types");
 		BorderPane pane = new BorderPane();
-		pane.setStyle("-fx-border-color: black;");
+
 		clear.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent arg0) {
 				numField.setText("");
 				filesImported = new ArrayList<>();
-				items = new ArrayList<>();
-				initP1();
+				initP3(primaryStage);
 			}
 		});
-		///////////
+///////////
 		edit.setOnAction(new EventHandler<ActionEvent>() {
 
 			public HBox generateCell(String name) {
@@ -165,40 +164,36 @@ public class FileProcessor extends Application {
 			}
 
 		});
-		///////////
+///////////
 		clearEdit.getChildren().addAll(clear, edit);
 		return clearEdit;
 	}
 
-	// creates the list of buttons to click to set the type of file on panel 3
-	public void generateButtonList(final Stage ps) {
-		VBox item = new VBox();
-		Button btn;
-		for (String t : types) {
-			btn = new Button(t);
-			btn.setPrefWidth(150);
-			btn.setPrefHeight(60);
-			btn.setOnAction(new EventHandler<ActionEvent>() {
-				@Override
-				public void handle(ActionEvent event) {
-					buttonOnClick((Button) event.getSource(), ps);
-				}
-			});
-			item.getChildren().add(btn);
-		}
-		hb3.getChildren().add(item);
-	}
-
-	// creates the queue for the files dropped in the window
-	public void generateFileQueue() {
-		// items = new ArrayList<>();
+	// creates the vbox to add as each item in the queue.
+	// the vbox will contain the filename & buttons of types
+	public void generateQueue(final Stage ps) {
+		items = new ArrayList<>();
 		VBox item;
-		Label fileName;
+		HBox buttons;
+		Button btn;
 		for (File f : filesImported) {
+			buttons = new HBox();
 			item = new VBox();
-			fileName = new Label(f.getName());
-			fileName.setId(f.getAbsolutePath());
-			item.getChildren().add(fileName);
+			item.getChildren().add(new Label(f.getName()));
+
+			for (int j = 0; j < types.size(); j++) {
+				btn = new Button(types.get(j));
+				btn.setId(f.getName());
+				btn.setOnAction(new EventHandler<ActionEvent>() {
+					@Override
+					public void handle(ActionEvent event) {
+						buttonOnClick((Button) event.getSource(), ps);
+					}
+				});
+				buttons.getChildren().add(btn);
+			}
+			item.getChildren().add(buttons);
+
 			items.add(item);
 		}
 	}
@@ -221,25 +216,20 @@ public class FileProcessor extends Application {
 	 * 4. remove from list & update the listview
 	 */
 	public void buttonOnClick(Button b, Stage ps) {
-		if(filesImported.size()<1){
-			Alert a = new Alert(AlertType.ERROR);
-			a.setContentText("There are no files to process");
-		}
-		String num = numField.getText(), 
-				labelName = filesImported.get(0).getAbsolutePath();
-			//	origFullPath = filesImported.get(findIndexOfFile(labelName)).getAbsolutePath();
-		//System.out.println(origFullPath);
-		//int n = Integer.valueOf(num);
-		if (!num.equals("") && !num.matches("^[0-9]+$")) {
+		String num = numField.getText(), labelName = b.getId(),
+				origFullPath = filesImported.get(findIndexOfFile(labelName)).getAbsolutePath();
+		System.out.println(origFullPath);
+
+		if (num.equals("") || num.matches("[0-9]+")) {// TODO: or is not a
+														// number
 			Alert a = new Alert(AlertType.ERROR);
 			a.setTitle("Invalid Input");
 			a.setContentText("Input for file number is invalid");
 			a.showAndWait();
 			System.out.println("Please enter file number");
 		} else {
-			String fileName = num + "_" + b.getText();
-			System.out.println(fileName);
-			
+			String fileName = num + "_" + b.getText() + ((origFullPath.indexOf(".") >= 0)
+					? origFullPath.substring(origFullPath.indexOf("."), origFullPath.length()) : "");
 			// TO
 			// FILENAME
 			if (fileNames.containsKey(fileName)) {
@@ -249,25 +239,22 @@ public class FileProcessor extends Application {
 			} else {
 				fileNames.put(fileName, new Integer(1));
 			}
-			fileName+= ((labelName.indexOf(".") >= 0)
-					? labelName.substring(labelName.indexOf("."), labelName.length()) : "");
 			System.out.println(fileName);
 			// TODO: rename & move file
 			renameAndMoveFile(labelName, fileName, Integer.valueOf(num));
 			// update listview
 			removeFile(labelName);
-			items = new ArrayList<>();
-			initP1();
+			initP3(ps);
 		}
 	}
 
 	public void renameAndMoveFile(String name, String newName, int fileNum) {
 		int index;
 
-	//	if ((index = findIndexOfFile(name)) > -1) {
+		if ((index = findIndexOfFile(name)) > -1) {
 			File target = new File(FILE_ROOT_DESTINATION + "//" + fileNum + "//" + newName);
-		//	File f = filesImported.get(index);
-			Path src = Paths.get(name), //
+			File f = filesImported.get(index);
+			Path src = Paths.get(f.getAbsolutePath()), //
 					dest = Paths.get(target.getAbsolutePath());
 			if (!target.exists()) {
 				// Files.createDirectory(target);
@@ -282,12 +269,12 @@ public class FileProcessor extends Application {
 				e.printStackTrace();
 			}
 
-		//}
+		}
 	}
 
 	public int findIndexOfFile(String name) {
 		for (int i = 0; i < filesImported.size(); i++) {
-			if (filesImported.get(i).getAbsolutePath().equals(name)) {
+			if (filesImported.get(i).getName().equals(name)) {
 				// filesImported.remove(i);
 				return i;
 			}
@@ -302,9 +289,8 @@ public class FileProcessor extends Application {
 			filesImported.remove(index);
 	}
 
-	private BorderPane border = new BorderPane();
-	private Scene scene;
-	private VBox hb1 = new VBox();
+	BorderPane border = new BorderPane();
+	Scene scene;
 
 	// the "main method" of this project
 	@Override
@@ -314,13 +300,13 @@ public class FileProcessor extends Application {
 			types = readTypesFromFile();
 			// set up the GUI window
 			border = new BorderPane();
-			initP1();
+			HBox hb1 = initP1();
 			VBox hb2 = initP2();
 			// after getting the list of types, show them on p3 as test
 			initP3(primaryStage);
 
 			// handler to notice the files being dragged in panel
-			border.setOnDragOver(new EventHandler<DragEvent>() {
+			hb1.setOnDragOver(new EventHandler<DragEvent>() {
 				@Override
 				public void handle(DragEvent event) {
 					Dragboard db = event.getDragboard();
@@ -333,7 +319,7 @@ public class FileProcessor extends Application {
 			});
 
 			// handler to deal with files dropped
-			border.setOnDragDropped(new EventHandler<DragEvent>() {
+			hb1.setOnDragDropped(new EventHandler<DragEvent>() {
 				@Override
 				public void handle(DragEvent event) {
 					Dragboard db = event.getDragboard();
@@ -351,17 +337,17 @@ public class FileProcessor extends Application {
 						}
 					}
 					event.setDropCompleted(success);
-					initP1();
+					initP3(primaryStage);
 				}
 			});
 
 			// setting the panels in the border-layout object
-			// border.setLeft(hb1);
 			border.setCenter(hb2);
-			// border.setRight(hb3);
-			border.setTop(initP3AddOn(primaryStage));
+			border.setLeft(hb1);
+			border.setRight(hb3);
+			// border.setTop(initP3AddOn(primaryStage));
 
-			Scene scene = new Scene(border, 501, 430);
+			Scene scene = new Scene(border, 551, 400);
 			primaryStage.setScene(scene);
 			primaryStage.setTitle("File Processor");
 			primaryStage.show();

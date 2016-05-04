@@ -253,7 +253,7 @@ public class FileProcessor extends Application {
 					? labelName.substring(labelName.indexOf("."), labelName.length()) : "");
 			System.out.println(fileName);
 			// TODO: rename & move file
-			renameAndMoveFile(labelName, fileName, fileNum);
+			renameAndCopyFile(labelName, fileName, fileNum);
 			// update listview
 			removeFile(labelName);
 			items = new ArrayList<>();
@@ -261,7 +261,7 @@ public class FileProcessor extends Application {
 		}
 	}
 
-	public void renameAndMoveFile(String name, String fileName, String fileNum) {
+	public void renameAndCopyFile(String name, String fileName, String fileNum) {
 	//	int index;
 
 	//	if ((index = findIndexOfFile(name)) > -1) {

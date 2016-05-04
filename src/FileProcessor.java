@@ -22,15 +22,15 @@ public class FileProcessor extends Application {
 	// //Users//alin//Documents//workspace//CSE306//RyansFileProcessor//src//Types.txt
 
 	// Ryan's work directory:
-	// C://Users//jhu//Desktop//branchy//
+	// C://Users//jhu//Desktop//branchy//deebee
 
 	// Ryan's home directory:
-	// C://Users//jhu//Desktop//branchy//Types.txt
+	// C://Users//jhu//Desktop//branchy//src//Types.txt
 
 	// TODO: ADD A BOTTOM BAR THAT CAN EDIT TYPE AND CLEAR ALL DATA
 
 	// the parent directory of where the files are supposed to go
-	private final String FILE_ROOT_DESTINATION = "C://Users//jhu//Desktop//branchy";
+	private final String FILE_ROOT_DESTINATION = "C://Users//jhu//Desktop//branchy//deebee";
 	// location of Types.txt
 	private final String FILE_TYPE_LOCATION = "C://Users//jhu//Desktop//branchy//src//Types.txt";
 	// list of files drag & dropped in
@@ -225,19 +225,19 @@ public class FileProcessor extends Application {
 			Alert a = new Alert(AlertType.ERROR);
 			a.setContentText("There are no files to process");
 		}
-		String num = numField.getText(), 
-				labelName = filesImported.get(0).getAbsolutePath();
+		String fileNum= numField.getText(), 
+		labelName = filesImported.get(0).getAbsolutePath();
 		//origFullPath = filesImported.get(findIndexOfFile(labelName)).getAbsolutePath();
 		//System.out.println(origFullPath);
 		//int n = Integer.valueOf(num);
-		if (num.equals("")) {
+		if (fileNum.equals("")) {
 			Alert a = new Alert(AlertType.ERROR);
 			a.setTitle("Invalid Input");
-			a.setContentText("Input for file number is invalid");
+			a.setContentText("Please input a file number");
 			a.showAndWait();
 			System.out.println("Please enter file number");
 		} else {
-			String fileName = num + "_" + b.getText();
+			String fileName = fileNum + " " + b.getText();
 			System.out.println(fileName);
 			
 			// TO
@@ -253,7 +253,7 @@ public class FileProcessor extends Application {
 					? labelName.substring(labelName.indexOf("."), labelName.length()) : "");
 			System.out.println(fileName);
 			// TODO: rename & move file
-			renameAndMoveFile(labelName, fileName, Integer.valueOf(num));
+			renameAndMoveFile(labelName, fileName, fileNum);
 			// update listview
 			removeFile(labelName);
 			items = new ArrayList<>();
@@ -261,14 +261,15 @@ public class FileProcessor extends Application {
 		}
 	}
 
-	public void renameAndMoveFile(String name, String newName, int fileNum) {
-		int index;
+	public void renameAndMoveFile(String name, String fileName, String fileNum) {
+	//	int index;
 
 	//	if ((index = findIndexOfFile(name)) > -1) {
-			File target = new File(FILE_ROOT_DESTINATION + "//" + fileNum + "//" + newName);
-		//	File f = filesImported.get(index);
-			Path src = Paths.get(name), //
-					dest = Paths.get(target.getAbsolutePath());
+			File target = new File(FILE_ROOT_DESTINATION + "//" + fileNum + "//" + fileName);
+                        Path src = Paths.get(name);
+                        File source = new File(src.toString());
+                        Path newsrc = Paths.get(source.getParentFile() + "//" + fileName);
+			Path dest = Paths.get(target.getAbsolutePath());
 			if (!target.exists()) {
 				// Files.createDirectory(target);
 				// target.mkdir();
@@ -276,7 +277,8 @@ public class FileProcessor extends Application {
 			}
 			System.out.println(dest);
 			try {
-				Files.move(src, dest, StandardCopyOption.REPLACE_EXISTING);
+                                Files.move(src, dest, StandardCopyOption.REPLACE_EXISTING);
+				Files.copy(dest, newsrc, StandardCopyOption.REPLACE_EXISTING);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

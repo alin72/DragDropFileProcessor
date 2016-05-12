@@ -160,7 +160,7 @@ public class FileProcessor extends Application {
 				HBox result = new HBox();
 				Button save = new Button();
 				Button cancel = new Button();
-				s = new Scene(lv,300,300);
+				s = new Scene(lv, 300, 300);
 				return result;
 			}
 
@@ -168,20 +168,21 @@ public class FileProcessor extends Application {
 				lv = new ListView<>();
 				ol = FXCollections.observableArrayList(items);
 				lv.setItems(ol);
-				
+
 			}
 
 			ListView<HBox> lv;
 			ArrayList<HBox> items;
 			ObservableList<HBox> ol;
 			Scene s;
+
 			@Override
 			public void handle(ActionEvent arg0) {
 				VBox dialogVbox = new VBox(20);
 				final Stage dialog = new Stage();
 				dialog.initModality(Modality.APPLICATION_MODAL);
 				dialog.initOwner(primaryStage);
-				
+
 				// TODO: ADD THE ADD TYPE POPUP
 				items = new ArrayList<>();
 				for (int i = 0; i < types.size(); i++) {
@@ -259,6 +260,8 @@ public class FileProcessor extends Application {
 		if (filesImported.size() < 1) {
 			Alert a = new Alert(AlertType.ERROR);
 			a.setContentText("There are no files to process");
+			a.show();
+			return;
 		}
 		String num = numField.getText(), labelName = filesImported.get(0).getAbsolutePath();
 		// origFullPath =
